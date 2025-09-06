@@ -1,2 +1,4 @@
 .git/objects/
 .terraform/
+modules/aws/.terraform/
+
