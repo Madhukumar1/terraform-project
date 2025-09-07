@@ -1,1 +1,1 @@
-key_name = "your-existing-keypair-name"
+key_name = "ws"
