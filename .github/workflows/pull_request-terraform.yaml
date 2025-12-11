@@ -1,0 +1,26 @@
+name: Terraform Plan on PR
+
+on:
+  pull_request:
+    branches:
+      - main # Or your default branch
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # Required to post plan as a comment
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          # Optional: specify terraform version
+          # terraform_version: 1.x.x
+
+      # Assumes you have configured AWS credentials using OpenID Connect (OIDC) for enhanced security
+      # See AWS documentation on "Use IAM roles to connect GitHub Actions to actions in AWS"
+      # Link: 
