@@ -9,6 +9,7 @@ jobs:
   terraform-plan:
     runs-on: ubuntu-latest
     permissions:
+      id-token: write
       contents: read
       pull-requests: write # Required to post plan as a comment
     steps:
