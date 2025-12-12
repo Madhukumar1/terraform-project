@@ -4,7 +4,13 @@ on:
   pull_request:
     branches:
       - main # Or your default branch
-
+  workflow_dispatch:
+    inputs:
+      ec2-name:
+        description: EC2 name
+        required: true
+        default: 'App Server'
+        type: string
 
 permissions:
   id-token: write
@@ -23,6 +29,18 @@ jobs:
           aws-region: ap-south-1
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
           
-      - name: test
-        run: aws sts get-caller-identity
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+      - name: Terraform Apply
+        id:   apply
+        env:
+          TF_VAR_ec2_name:  "${{ github.event.inputs.ec2-name }}"
+        run: |
+          cd tf-example/
+          terraform init
+          terraform validate
+          terraform plan 
+          terraform apply -auto-approve
      
