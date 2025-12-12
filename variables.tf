@@ -1,3 +1,4 @@
 variable "ec2_name" {
-  type = string
+  type    = string
+  default = "my-ec2"
 }
