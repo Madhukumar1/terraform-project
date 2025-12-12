@@ -33,14 +33,17 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: false
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Debug workspace
+        run: ls -R .
+
       - name: Terraform Apply
-        id:   apply
-        env:
-          TF_VAR_ec2_name:  "${{ github.event.inputs.ec2-name }}"
         run: |
           cd tf-example/
           terraform init
           terraform validate
-          terraform plan 
+          terraform plan
           terraform apply -auto-approve
      
