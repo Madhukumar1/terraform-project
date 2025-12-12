@@ -32,21 +32,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.6.6
+      - name: Install Terraform
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          sudo apt-get update && sudo apt-get install terraform
 
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Format
-        run: terraform fmt -check
+      - name: Terraform Validate
+        run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -input=false
-      # On push to "main", deploy the Terraform infrastructure
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+        run: terraform plan -out=tfplan
+
+      - name: Terraform apply "tfplan"
+        run: terraform apply -auto-approve tfplan
      
