@@ -2,8 +2,9 @@ name: Terraform Plan on PR
 
 on:
   pull_request:
-    branches:
-      - main # Or your default branch
+    branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       ec2-name:
@@ -15,6 +16,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write  # Needed for PR comments
 
 jobs:
   terraform-plan:
@@ -23,17 +25,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: configure aws credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: ap-south-1
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          
-      - name: Checkout
-        uses: actions/checkout@v3
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3  # Update to latest
         with:
           terraform_version: 1.6.6
 
@@ -44,9 +43,19 @@ jobs:
         run: terraform fmt -check
 
       - name: Terraform Plan
-        run: terraform plan -input=false
-      # On push to "main", deploy the Terraform infrastructure
+        uses: dflook/terraform-plan@v1  # Posts plan as PR comment
+        with:
+          path: .  # Or your tf dir
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Add workspace or var inputs if needed
+
+  terraform-apply:
+    needs: terraform-plan  # Run after successful plan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      # Repeat checkout, AWS config, setup, init steps here
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
-     
+        run: |
+          terraform plan -input=false -out=tfplan
+          terraform apply -auto-approve tfplan
