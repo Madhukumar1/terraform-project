@@ -21,7 +21,7 @@ resource "aws_instance" "app_server" {
 }
 
 resource "aws_s3_bucket" "tfbucket" {
-  bucket = "my-tf-test1-bucket"
+  bucket = "my-tf-test123-bucket12345"
 
   tags = {
     Name        = "My bucket"
