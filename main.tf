@@ -20,3 +20,12 @@ resource "aws_instance" "app_server" {
   }
 }
 
+resource "aws_s3_bucket" "tfbucket" {
+  bucket = "my-tf-test1-bucket"
+
+  tags = {
+    Name        = "My bucket"
+    Environment = "Dev"
+  }
+}
+
