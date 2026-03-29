@@ -1,8 +1,7 @@
 resource "aws_security_group" "ssh" {
   name        = "allow_ssh1"
   description = "Allow SSH inbound traffic"
-  
-  ingress {
+    ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
