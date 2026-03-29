@@ -1,29 +1,63 @@
-resource "aws_security_group" "ssh" {
-  name        = "allow_ssh1"
-  description = "Allow SSH inbound traffic"
-  
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # ⚠️ Use your IP for better security
-  }
+# Terraform AWS Module
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+# Best practices implementation
+
+variable "vpc_cidr" {  
+type        = string  
+description = "The CIDR block for the VPC"
+}
+
+resource "aws_vpc" "main" {  
+  cidr_block = var.vpc_cidr  
+  tags = {    
+    Name = "Main VPC"  
+    Environment = var.environment  
   }
 }
 
-resource "aws_instance" "myec2" {
-  ami           = "ami-09e6f87a47903347c"
-  instance_type = "t2.micro"
-  key_name      = var.key_name
-  vpc_security_group_ids = [aws_security_group.ssh.id]
-
-  tags = {
-    Name = "MyEC2Instance"
+variable "instance_type" {  
+type    = string  
+default = "t2.micro"  
+  validation {    
+    condition = contains(["t2.micro", "t2.small", "t2.medium", "t3.micro", "t3.small", "t3.medium"], var.instance_type)    
+    error_message = "Invalid instance type. Must be one of: t2.micro, t2.small, t2.medium, t3.micro, t3.small, t3.medium."  
   }
+}
+
+resource "aws_instance" "example" {  
+  ami           = var.ami_id  
+  instance_type = var.instance_type  
+  tags = {    
+    Name = "Example Instance"  
+    Environment = var.environment  
+  }
+  root_block_device {    
+    volume_type = "gp3"    
+    volume_size = 20    
+  }
+}
+
+output "instance_id" {  
+  value = aws_instance.example.id  
+}
+
+output "vpc_id" {  
+  value = aws_vpc.main.id  
+}
+
+variable "enable_logging" {  
+type    = bool  
+default = true  
+}
+
+variable "environment" {  
+type        = string  
+description = "Deployment environment (e.g. dev, staging, prod)"
+}
+
+# Defaults for timeouts
+timeouts {  
+  create = "1h"  
+  update = "1h"  
+  delete = "1h"  
 }
