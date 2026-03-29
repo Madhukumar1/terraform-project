@@ -110,13 +110,33 @@ jobs:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
           role-session-name: terraform-apply-${{ github.run_id }}
 
+<<<<<<< HEAD
+      - name: Install Terraform
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          sudo apt-get update && sudo apt-get install terraform
+=======
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
+>>>>>>> deed7a51c8877e06dba5f92e3f2a96a821bf8216
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -reconfigure
 
+<<<<<<< HEAD
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform apply "tfplan"
+        run: terraform apply -auto-approve tfplan
+     
+=======
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false
+>>>>>>> deed7a51c8877e06dba5f92e3f2a96a821bf8216
