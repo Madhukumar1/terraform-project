@@ -15,6 +15,11 @@ resource "aws_vpc" "main" {
   }
 }
 
+variable "ami_id" {
+type        = string
+description = "The AMI ID to use for the instance"
+}
+
 variable "instance_type" {  
 type    = string  
 default = "t2.micro"  
@@ -35,6 +40,11 @@ resource "aws_instance" "example" {
     volume_type = "gp3"    
     volume_size = 20    
   }
+  timeouts {  
+    create = "1h"  
+    update = "1h"  
+    delete = "1h"  
+  }
 }
 
 output "instance_id" {  
@@ -53,11 +63,4 @@ default = true
 variable "environment" {  
 type        = string  
 description = "Deployment environment (e.g. dev, staging, prod)"
-}
-
-# Defaults for timeouts
-timeouts {  
-  create = "1h"  
-  update = "1h"  
-  delete = "1h"  
 }
