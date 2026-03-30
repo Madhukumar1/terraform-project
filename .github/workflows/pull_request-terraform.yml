@@ -1,122 +1,30 @@
-name: Terraform Plan on PR
+variable "ami_id" {
+  description = "The AMI ID to use for the instance"
+  type        = string
+}
 
-on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '**/*.tf'
-      - '.github/workflows/pull_request-terraform.yml'
-      - 'environments/**'
-  push:
-    branches:
-      - main
-    paths:
-      - '**/*.tf'
-      - 'environments/**'
-  workflow_dispatch:
-    inputs:
-      vpc_id:
-        description: "Existing VPC ID"
-        required: true
-        type: string
-      ec2-name:
-        description: "EC2 instance name"
-        required: true
-        default: 'App Server'
-        type: string
+variable "vpc_cidr" {
+  description = "The CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
 
-permissions:
-  id-token: write
-  contents: read
-  pull-requests: write
+variable "environment" {
+  description = "The environment to deploy to (e.g., dev, staging, prod)"
+  type        = string
+  default     = "dev"
+}
 
-env:
-  AWS_REGION: ap-south-1
-  TERRAFORM_VERSION: 1.6.6
+provider "aws" {
+  region = "us-east-1"
+}
 
-jobs:
-  terraform-plan:
-    name: Terraform Plan
-    runs-on: ubuntu-latest
-    outputs:
-      plan-exitcode: ${{ steps.plan.outputs.exitcode }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+resource "aws_instance" "example" {
+  ami           = var.ami_id
+  instance_type = "t2.micro"
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          role-session-name: terraform-plan-${{ github.run_id }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
-          terraform_wrapper: true
-
-      - name: Terraform Init
-        id: init
-        run: terraform init
-
-      - name: Terraform Format Check
-        id: fmt
-        run: terraform fmt -check -recursive
-
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate
-
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -out=tfplan -input=false
-        continue-on-error: true
-
-      - name: Comment Plan on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const plan = `${{ steps.plan.outputs.stdout }}`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Terraform Plan\n\`\`\`\n${plan}\n\`\`\``
-            });
-
-  terraform-apply:
-    name: Terraform Apply
-    needs: terraform-plan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          role-session-name: terraform-apply-${{ github.run_id }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+  timeouts {
+    create = "10m"
+    delete = "10m"
+  }
+}
