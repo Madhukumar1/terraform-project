@@ -1,10 +1,33 @@
 # Terraform AWS Module
-
 # Best practices implementation
 
 variable "vpc_cidr" {  
-type        = string  
-description = "The CIDR block for the VPC"
+  type        = string  
+  description = "The CIDR block for the VPC"
+}
+
+variable "ami_id" {
+  type        = string
+  description = "The AMI ID for the EC2 instance"
+}
+
+variable "instance_type" {  
+  type    = string  
+  default = "t2.micro"  
+  validation {    
+    condition = contains(["t2.micro", "t2.small", "t2.medium", "t3.micro", "t3.small", "t3.medium"], var.instance_type)    
+    error_message = "Invalid instance type. Must be one of: t2.micro, t2.small, t2.medium, t3.micro, t3.small, t3.medium."  
+  }
+}
+
+variable "environment" {  
+  type        = string  
+  description = "Deployment environment (e.g. dev, staging, prod)"
+}
+
+variable "enable_logging" {  
+  type    = bool  
+  default = true  
 }
 
 resource "aws_vpc" "main" {  
@@ -12,15 +35,6 @@ resource "aws_vpc" "main" {
   tags = {    
     Name = "Main VPC"  
     Environment = var.environment  
-  }
-}
-
-variable "instance_type" {  
-type    = string  
-default = "t2.micro"  
-  validation {    
-    condition = contains(["t2.micro", "t2.small", "t2.medium", "t3.micro", "t3.small", "t3.medium"], var.instance_type)    
-    error_message = "Invalid instance type. Must be one of: t2.micro, t2.small, t2.medium, t3.micro, t3.small, t3.medium."  
   }
 }
 
@@ -35,6 +49,12 @@ resource "aws_instance" "example" {
     volume_type = "gp3"    
     volume_size = 20    
   }
+  
+  timeouts {
+    create = "1h"
+    update = "1h"
+    delete = "1h"
+  }
 }
 
 output "instance_id" {  
@@ -44,22 +64,3 @@ output "instance_id" {
 output "vpc_id" {  
   value = aws_vpc.main.id  
 }
-
-variable "enable_logging" {  
-type    = bool  
-default = true  
-}
-
-variable "environment" {  
-type        = string  
-description = "Deployment environment (e.g. dev, staging, prod)"
-}
-
-# Defaults for timeouts
-timeouts {  
-  create = "1h"  
-  update = "1h"  
-  delete = "1h"  
-}
-
-#
