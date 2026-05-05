@@ -15,25 +15,35 @@ resource "aws_vpc" "main" {
   }
 }
 
-variable "instance_type" {  
-type    = string  
-default = "t2.micro"  
-  validation {    
-    condition = contains(["t2.micro", "t2.small", "t2.medium", "t3.micro", "t3.small", "t3.medium"], var.instance_type)    
-    error_message = "Invalid instance type. Must be one of: t2.micro, t2.small, t2.medium, t3.micro, t3.small, t3.medium."  
+# Add a subnet resource
+resource "aws_subnet" "main" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "172.31.0.0/16"  # Adjust based on your vpc_cidr
+  availability_zone = "${var.aws_region}a"  # You'll need to add this variable
+  tags = {
+    Name        = "Main Subnet"
+    Environment = var.environment
   }
 }
 
-resource "aws_instance" "example" {  
-  ami           = var.ami_id  
-  instance_type = var.instance_type  
-  tags = {    
-    Name = "Example Instance"  
-    Environment = var.environment  
+# Update the EC2 instance resource
+resource "aws_instance" "example" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  subnet_id     = aws_subnet.main.id  # Add this line
+  tags = {
+    Name        = "Example Instance"
+    Environment = var.environment
   }
-  root_block_device {    
-    volume_type = "gp3"    
-    volume_size = 20    
+  root_block_device {
+    volume_type = "gp3"
+    volume_size = 20
+  }
+
+  timeouts {
+    create = "1h"
+    update = "1h"
+    delete = "1h"
   }
 }
 
