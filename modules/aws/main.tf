@@ -39,12 +39,6 @@ resource "aws_instance" "example" {
     volume_type = "gp3"
     volume_size = 20
   }
-
-  timeouts {
-    create = "1h"
-    update = "1h"
-    delete = "1h"
-  }
 }
 
 output "instance_id" {  
