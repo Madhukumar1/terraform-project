@@ -13,7 +13,7 @@ resource "aws_vpc" "main" {
 # Add a subnet resource
 resource "aws_subnet" "main" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "172.31.0.0/16" # Adjust based on your vpc_cidr
+  cidr_block        = "172.31.0.0/16"      # Adjust based on your vpc_cidr
   availability_zone = "${var.aws_region}a" # You'll need to add this variable
 
   tags = {
