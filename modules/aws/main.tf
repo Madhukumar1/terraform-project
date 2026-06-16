@@ -40,7 +40,7 @@ resource "aws_instance" "myec2" {
 }
 
 output "instance_id" {
-  value = aws_instance.example.id
+  value = aws_instance.myec2.id
 }
 
 output "vpc_id" {
