@@ -64,7 +64,11 @@ jobs:
       - name: Terraform Init
         id: init
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform init -upgrade
+        run: |
+          # Comment out backend temporarily for testing
+          mv backend.tf backend.tf.bak
+          terraform init -upgrade
+          mv backend.tf.bak backend.tf
 
       - name: Terraform Format Check
         id: fmt
