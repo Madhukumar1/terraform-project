@@ -23,7 +23,7 @@ resource "aws_subnet" "main" {
 }
 
 # Update the EC2 instance resource
-resource "aws_instance" "example" {
+resource "aws_instance" "myec2" {
   ami           = var.ami_id
   instance_type = var.instance_type
   subnet_id     = aws_subnet.main.id # Add this line
