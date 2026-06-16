@@ -1,2 +1,6 @@
 ami_id        = "ami-0e38835daf6b8a2b9"
 instance_type = "t2.micro"
+key_name      = "a1"
+aws_region    = "ap-south-1"
+environment   = "dev"
+vpc_cidr      = "10.0.0.0/16"
