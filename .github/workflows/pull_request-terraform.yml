@@ -79,7 +79,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=tfplan -lock=false
         continue-on-error: true
 
       - name: Comment Plan on PR
@@ -124,5 +124,5 @@ jobs:
         run: terraform init
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -auto-approve -input=false -lock=false
         
